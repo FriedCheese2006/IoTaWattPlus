@@ -43,8 +43,8 @@ def installed() {
 def updated() {
     log.info "Updated with $settings"
     unschedule()
-    if (debugOutput) runIn(1800,logsOff)
-    if (traceOutput) runIn(1800,logsOff)
+    if (debugOutput) runIn(1800,debugLogsOff)
+    if (traceOutput) runIn(1800,traceLogsOff)
     initialize()
 
 }
@@ -193,10 +193,20 @@ def logDebug(msg) {
     }
 }
 
+def debugLogsOff(){
+    log.warn "debug logging disabled..."
+    device.updateSetting("debugOutput",[value:"false",type:"bool"])
+}
+
 def logTrace(msg) {
     if (settings?.traceOutput) {
 		log.trace msg
     }
+}
+
+def traceLogsOff(){
+    log.warn "debug logging disabled..."
+    device.updateSetting("traceOutput",[value:"false",type:"bool"])
 }
 
 def getFormat(type, myText="") {
