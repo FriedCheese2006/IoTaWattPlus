@@ -26,7 +26,6 @@ metadata {
 preferences {
     input name: "deviceIP", type: "text", title: getFormat("header","IoTaWatt Hub IP/Hostname"), description: getFormat("important","IP or DNS name"), required: true, displayDuringSetup: true
     input name: "pollingInterval", type: "number", title: getFormat("header","How often should attributes be updated?"), description: getFormat("important","In seconds (10-300)"), range: "10..300", defaultValue: 30, displayDuringSetup: true
-    input name: "getDeviceInterval", type: "number", title: getFormat("header","How often should the device list be checked?"), description: getFormat("important","In seconds (10-300)"), range: "10..300", defaultValue: 30, displayDuringSetup: true
     input name: "infoOutput", type: "bool", title: getFormat("header","Enable info logging"), defaultValue: true
     input name: "debugOutput", type: "bool", title: getFormat("header","Enable debug logging"), defaultValue: true
     input name: "traceOutput", type: "bool", title: getFormat("header","Enable trace logging"), defaultValue: true
@@ -44,7 +43,8 @@ def installed() {
 def updated() {
     log.info "Updated with $settings"
     unschedule()
-    // if (debugOutput) runIn(1800,logsOff)
+    if (debugOutput) runIn(1800,logsOff)
+    if (traceOutput) runIn(1800,logsOff)
     initialize()
 
 }
@@ -55,8 +55,15 @@ def initialize() {
     if(deviceIP) runIn(5,'handleUpdates')
 }
 
+def handleUpdates() {
+  runIn(pollingInterval,getDeviceList)
+  runIn(pollingInterval+5,handleUpdates)
+  state.wattDeviceList.each { it ->
+    fetchDeviceEnergy(it)
+  }
+}
+
 def getDeviceList() {
-  runIn(getDeviceInterval,getDeviceList)
   logTrace "Getting device list"
   def params = [
     uri: "http://${deviceIP}/query?show=series",
@@ -84,14 +91,13 @@ def parseDeviceList(response, data) {
 def childDeviceHandler() {
   wattDeviceList = state.wattDeviceList
   createdChild = state.createdChild ?: wattDeviceList
+  if(wattDeviceList.sort() != createdChild.sort()) {log.info "Device list changed. Adding/removing devices as needed."}
   wattDeviceList.each{
-    if(createdChild.contains(it)){
-      logTrace "Found device $it in list"
-      def childDevice = getChildDevice("iw+:_${device.id}_${it}")
-      if (!childDevice) {
-        logDebug "Creating child device"
-        addChildDevice("rle.iw+", "IoTaWatt+ Child", "iw+:_${device.id}_${it}", [label: it, isComponent: false])
-      }
+    logTrace "Found device $it in list"
+    def childDevice = getChildDevice("iw+:_${device.id}_${it}")
+    if (!childDevice) {
+      logDebug "Creating child device"
+      addChildDevice("rle.iw+", "IoTaWatt+ Child", "iw+:_${device.id}_${it}", [label: it, isComponent: false])
     }
   }
   createdChild.each{
@@ -99,15 +105,8 @@ def childDeviceHandler() {
       logTrace "$it was renamed or removed. Deleting child"
       deleteChildDevice("iw+:_${device.id}_${it}")
     }
-  }
+  }  
   state.createdChild = wattDeviceList
-}
-
-def handleUpdates() {
-  runIn(pollingInterval, 'handleUpdates')
-  state.wattDeviceList.each { it ->
-    fetchDeviceEnergy(it)
-  }
 }
 
 def fetchDeviceEnergy(wattDevice) {
@@ -131,6 +130,7 @@ def parseDeviceEnergy(response, data) {
   wh = resp.data[0][0].toDouble()
   kwh = (wh / 1000)
   def childDevice = getChildDevice("iw+:_${device.id}_${wattDevice}")
+  logTrace "Parsing response for $childDevice "
   childDevice.sendEvent(name: "energy", value: kwh, units: kWh, descriptionText: "$childDevice.label energy is $kwh kWh.")
   if(infoOutput) childDevice.logInfo "$wattDevice energy use today is $kwh"
   fetchDeviceOther(wattDevice)
