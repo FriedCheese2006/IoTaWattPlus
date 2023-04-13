@@ -1,9 +1,10 @@
 {
   "packageName": "IoTaWatt+",
   "author": "Ryan Elliott",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minimumHEVersion": "0.0",
   "dateReleased": "2023-04-10",
+  "releaseNotes": "v0.1.1 - Added error handling for invalid JSON responses. Added healthStatus and presence to parent. Added current meter capability to child.\n\nFor further information or to report issues/request features, please see the community thread https://community.hubitat.com/t/release-iotawatt-beta/116875",
   "drivers": [
     {
       "id": "1b3ab14e-14cd-491e-a428-340e94c8ecff",
@@ -16,7 +17,7 @@
       "id": "b94e9f7e-9e17-4184-9dd5-efca79be880e",
       "name": "IoTaWatt+ Child",
       "namespace": "rle.iw+",
-      "location": "https://raw.githubusercontent.com/FriedCheese2006/IoTaWattPlus/main/IotaWattChild.groovy",
+      "location": "https://friedcheese2006.gateway.scarf.sh/IoTaWattChild.groovy",
       "required": true
     }
   ]

@@ -12,14 +12,15 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- * v0.1.0		RLE		Creation
+ * See parent driver for version notes.
  */
 
 metadata {
-    definition (name: "IoTaWatt+ Child", namespace: "rle.iw+", author: "FriedCheese2006", importUrl: "") {
+    definition (name: "IoTaWatt+ Child", namespace: "rle.iw+", author: "FriedCheese2006", importUrl: "https://friedcheese2006.gateway.scarf.sh/IoTaWattChild.groovy") {
         capability "Energy Meter"
         capability "Power Meter"
         capability "Voltage Measurement"
+        capability "Current Meter"
     }
 }
 
